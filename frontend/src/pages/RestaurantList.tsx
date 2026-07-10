@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { getFoodRankCards } from "../services/foodrankService";
+import { getCategories } from "../services/categoryService";
 
 import type { MenuCard as MenuCardType } from "../types/MenuCard";
 
@@ -9,25 +10,32 @@ import SearchBar from "../components/home/SearchBar";
 import CategoryGrid from "../components/home/CategoryGrid";
 import LocationPicker from "../components/home/LocationPicker";
 import FilterBar from "../components/home/FilterBar";
-
+import Header from "../components/layout/Header";
 
 export default function RestaurantList() {
   const [menuCards, setMenuCards] = useState<MenuCardType[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  useEffect(() => {
-  async function loadData() {
-    const data = await getFoodRankCards();
-
-    setMenuCards(data);
-    setLoading(false);
-  }
-
-  loadData();
-}, []);
 
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("foodrank");
   const [selectedCategory, setSelectedCategory] = useState("");
+
+  useEffect(() => {
+    async function loadData() {
+      const [cards, cats] = await Promise.all([
+        getFoodRankCards(),
+        getCategories(),
+      ]);
+
+      setMenuCards(cards);
+      setCategories(cats);
+
+      setLoading(false);
+    }
+
+    loadData();
+  }, []);
 
   const filteredItems = [...menuCards]
     .filter((item) => {
@@ -58,17 +66,23 @@ export default function RestaurantList() {
       }
     });
 
-    if (loading) {
-  return (
-    <div className="min-h-screen flex items-center justify-center text-xl">
-      Yükleniyor...
-    </div>
-  );
-}
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-xl">
+        Yükleniyor...
+      </div>
+    );
+  }
 
   return (
+  <>
+    <Header />
+
     <main className="min-h-screen bg-gray-50">
+
       <div className="max-w-6xl mx-auto px-6 py-8">
+
+        <Header />
 
         <SearchBar
           search={search}
@@ -76,6 +90,7 @@ export default function RestaurantList() {
         />
 
         <CategoryGrid
+          categories={categories}
           selectedCategory={selectedCategory}
           setSelectedCategory={setSelectedCategory}
         />
@@ -92,22 +107,21 @@ export default function RestaurantList() {
         </div>
 
         {filteredItems.length > 0 ? (
-
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-            {filteredItems.map((item) => (
+            {filteredItems.map((item, index) => (
 
               <MenuCard
                 key={item.id}
                 item={item}
+                rank={index + 1}
               />
 
             ))}
 
+
           </div>
-
         ) : (
-
           <div className="text-center py-20">
 
             <h2 className="text-2xl font-bold">
@@ -119,11 +133,10 @@ export default function RestaurantList() {
             </p>
 
           </div>
-
         )}
 
       </div>
     </main>
+    </>
   );
 }
-

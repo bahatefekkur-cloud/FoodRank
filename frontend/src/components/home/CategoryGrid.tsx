@@ -1,28 +1,30 @@
-import { categories } from "../../data/categories";
-
 interface Props {
+  categories: any[];
   selectedCategory: string;
   setSelectedCategory: (category: string) => void;
 }
 
 export default function CategoryGrid({
+  categories,
   selectedCategory,
   setSelectedCategory,
 }: Props) {
   return (
-    <section className="px-6 py-8">
+    <section className="mb-10">
 
-      <h2 className="text-2xl font-bold mb-6">
+      <h2 className="text-3xl font-bold mb-6">
         Kategoriler
       </h2>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-5">
 
         {categories.map((category) => {
 
-          const active = selectedCategory === category.name;
+          const active =
+            selectedCategory === category.name;
 
           return (
+
             <div
               key={category.id}
               onClick={() =>
@@ -30,29 +32,40 @@ export default function CategoryGrid({
                   active ? "" : category.name
                 )
               }
-              className={`rounded-2xl p-6 text-center cursor-pointer transition
+              className={`
+                cursor-pointer
+                overflow-hidden
+                rounded-3xl
+                bg-white
+                shadow-md
+                hover:shadow-xl
+                hover:-translate-y-1
+                transition-all
+                duration-300
                 ${
                   active
-                    ? "bg-orange-500 text-white shadow-lg"
-                    : "bg-white shadow-sm hover:shadow-lg"
-                }`}
+                    ? "ring-4 ring-orange-500"
+                    : ""
+                }
+              `}
             >
 
-              <div className="w-16 h-16 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center mb-3 mx-auto">
+              <img
+                src={category.image}
+                alt={category.name}
+                className="w-full h-36 object-cover"
+              />
 
-                <img
-                  src={category.image}
-                  alt={category.name}
-                  className="w-full h-full object-cover"
-                />
+              <div className="p-4 text-center">
 
-              </div>
+                <h3 className="font-bold text-lg">
+                  {category.name}
+                </h3>
 
-              <div className="font-semibold">
-                {category.name}
               </div>
 
             </div>
+
           );
         })}
 

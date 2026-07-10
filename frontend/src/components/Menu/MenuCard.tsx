@@ -3,9 +3,14 @@ import { Link } from "react-router-dom";
 
 interface Props {
   item: MenuCard;
+  rank: number;
 }
 
-export default function MenuCard({ item }: Props) {
+export default function MenuCard({
+  item,
+  rank,
+}: Props)
+ {
   return (
     <Link
   to={`/restaurant/${item.restaurantSlug}`}
@@ -19,6 +24,34 @@ export default function MenuCard({ item }: Props) {
       />
 
       <div className="p-5">
+
+<div className="mb-3">
+
+  {rank === 1 && (
+    <span className="bg-yellow-400 text-black px-3 py-1 rounded-full font-bold">
+      🥇 #1
+    </span>
+  )}
+
+  {rank === 2 && (
+    <span className="bg-gray-300 text-black px-3 py-1 rounded-full font-bold">
+      🥈 #2
+    </span>
+  )}
+
+  {rank === 3 && (
+    <span className="bg-orange-300 text-black px-3 py-1 rounded-full font-bold">
+      🥉 #3
+    </span>
+  )}
+
+  {rank > 3 && rank <= 10 && (
+    <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full font-bold">
+      #{rank}
+    </span>
+  )}
+
+</div>
 
         <h3 className="text-xl font-bold">
           {item.restaurantName}
@@ -38,16 +71,10 @@ export default function MenuCard({ item }: Props) {
           {item.gram} gr
         </p>
 
-        <div className="mt-4 flex justify-between items-center">
+        <div className="mt-4 flex justify-center">
 
-          <span className="text-2xl font-bold text-orange-600">
+          <span className="text-3xl font-extrabold text-orange-600">
             {item.price} ₺
-          </span>
-
-          <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full">
-
-            🏆 {item.foodRankScore}
-
           </span>
 
         </div>

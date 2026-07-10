@@ -8,16 +8,20 @@ export default function SearchBar({
   setSearch,
 }: Props) {
   return (
-    <div className="w-full">
+    <section className="mb-10">
 
-      <input
-        type="text"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Restoran veya yemek ara..."
-        className="w-full rounded-2xl border border-gray-200 px-5 py-4 text-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-      />
+      <div className="relative">
 
-    </div>
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="🔍 İskender, Lahmacun, Pizza veya restoran ara..."
+          className="w-full rounded-3xl border border-gray-200 bg-white px-7 py-5 text-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition"
+        />
+
+      </div>
+
+    </section>
   );
 }

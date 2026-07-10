@@ -1,27 +1,52 @@
+import logo from "../../assets/images/logo.png";
+
 export default function Header() {
   return (
-    <header className="sticky top-0 bg-white border-b border-gray-200">
-      <div className="max-w-md mx-auto flex items-center justify-between px-5 py-4">
+    <header className="bg-white border-b">
 
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🍽️</span>
+      <div className="max-w-6xl mx-auto px-6 py-6">
 
-            <h1 className="text-3xl font-extrabold text-gray-900">
-              FoodRank
+        <div className="flex items-center gap-4">
+
+          <img
+            src={logo}
+            alt="FoodRank"
+            className="w-20 h-20"
+          />
+
+          <div>
+
+            <h1 className="text-5xl font-extrabold">
+
+              <span className="text-gray-900">
+                Food
+              </span>
+
+              <span className="text-orange-500">
+                Rank
+              </span>
+
             </h1>
+
+            <p className="text-lg font-semibold text-gray-700">
+
+              Karşılaştır. Keşfet. Karar Ver.
+
+            </p>
+
+            <p className="text-gray-500 mt-1">
+
+              Binlerce restoranı karşılaştır,
+              en doğru seçimi yap.
+
+            </p>
+
           </div>
 
-          <p className="text-sm text-gray-500 mt-1">
-            Karşılaştır. Keşfet. Karar Ver.
-          </p>
         </div>
 
-        <button className="text-3xl hover:opacity-70">
-          ☰
-        </button>
-
       </div>
+
     </header>
   );
 }
