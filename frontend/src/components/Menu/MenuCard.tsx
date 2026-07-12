@@ -6,107 +6,122 @@ interface Props {
   rank: number;
 }
 
-export default function MenuCard({
-  item,
-  rank,
-}: Props)
- {
+export default function MenuCard({ item, rank }: Props) {
+  const rankBadge = () => {
+    if (rank === 1)
+      return (
+        <span className="rounded-full bg-yellow-400 px-3 py-1 text-sm font-bold text-black shadow">
+          🥇 #1
+        </span>
+      );
+
+    if (rank === 2)
+      return (
+        <span className="rounded-full bg-gray-300 px-3 py-1 text-sm font-bold text-black shadow">
+          🥈 #2
+        </span>
+      );
+
+    if (rank === 3)
+      return (
+        <span className="rounded-full bg-orange-300 px-3 py-1 text-sm font-bold text-black shadow">
+          🥉 #3
+        </span>
+      );
+
+    if (rank <= 10)
+      return (
+        <span className="rounded-full bg-orange-100 px-3 py-1 text-sm font-bold text-orange-700">
+          #{rank}
+        </span>
+      );
+
+    return null;
+  };
+
   return (
     <Link
-  to={`/restaurant/${item.restaurantSlug}`}
-  className="block bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-lg transition"
->
+      to={`/restaurant/${item.restaurantSlug}`}
+      className="group overflow-hidden rounded-3xl bg-white shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+    >
+      {/* Fotoğraf */}
+      <div className="relative overflow-hidden">
+        <img
+          src={item.image}
+          alt={item.restaurantName}
+          className="h-56 w-full object-cover transition duration-500 group-hover:scale-105"
+        />
 
-      <img
-        src={item.image}
-        alt={item.restaurantName}
-        className="w-full h-48 object-cover"
-      />
+        <div className="absolute left-4 top-4">
+          {rankBadge()}
+        </div>
+
+        <div className="absolute right-4 top-4 rounded-full bg-white/95 px-3 py-1 text-sm font-semibold shadow">
+          ⭐ {item.googleRating}
+        </div>
+      </div>
 
       <div className="p-5">
 
-<div className="mb-3">
-
-  {rank === 1 && (
-    <span className="bg-yellow-400 text-black px-3 py-1 rounded-full font-bold">
-      🥇 #1
-    </span>
-  )}
-
-  {rank === 2 && (
-    <span className="bg-gray-300 text-black px-3 py-1 rounded-full font-bold">
-      🥈 #2
-    </span>
-  )}
-
-  {rank === 3 && (
-    <span className="bg-orange-300 text-black px-3 py-1 rounded-full font-bold">
-      🥉 #3
-    </span>
-  )}
-
-  {rank > 3 && rank <= 10 && (
-    <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full font-bold">
-      #{rank}
-    </span>
-  )}
-
-</div>
-
-        <h3 className="text-xl font-bold">
+        {/* Restoran */}
+        <h3 className="line-clamp-1 text-xl font-bold">
           {item.restaurantName}
         </h3>
 
-        <p className="text-sm text-gray-500 mt-1">
-          ⭐ {item.googleRating} ({item.googleReviews} yorum)
+        <p className="mt-1 text-sm text-gray-500">
+          💬 {item.googleReviews.toLocaleString()} yorum
         </p>
 
-        <hr className="my-4" />
+        {/* Ürün */}
+        <div className="mt-5">
+          <p className="text-sm uppercase tracking-wide text-orange-500 font-semibold">
+            Menü
+          </p>
 
-        <h2 className="text-2xl font-bold">
-          {item.itemName}
-        </h2>
+          <h2 className="mt-1 text-2xl font-bold">
+            {item.itemName}
+          </h2>
 
-        <p className="text-gray-500">
-          {item.gram} gr
-        </p>
+          <p className="mt-1 text-gray-500">
+            {item.gram} gr
+          </p>
+        </div>
 
-        <div className="mt-4 flex justify-center">
+        {/* Fiyat */}
+        <div className="mt-6 flex items-end justify-between">
+          <div>
+            <p className="text-sm text-gray-500">
+              Güncel Fiyat
+            </p>
 
-          <span className="text-3xl font-extrabold text-orange-600">
-            {item.price} ₺
+            <p className="text-4xl font-extrabold text-orange-600">
+              {item.price} ₺
+            </p>
+          </div>
+
+          <div className="rounded-2xl bg-orange-50 px-4 py-2 text-center">
+            <p className="text-xs text-gray-500">
+              FoodRank
+            </p>
+
+            <p className="text-xl font-bold text-orange-600">
+              {item.foodRankScore}
+            </p>
+          </div>
+        </div>
+
+        {/* Alt Bilgi */}
+        <div className="mt-6 flex items-center justify-between border-t pt-4 text-sm text-gray-500">
+
+          <span>
+            📍 {item.district}, {item.city}
           </span>
+
+          <span>{item.lastUpdated}</span>
 
         </div>
 
-        <div className="mt-5 space-y-2 text-sm text-gray-500">
-
-  <div className="flex justify-between">
-
-    <span>📍 {item.district}</span>
-
-    <span>{item.city}</span>
-
-  </div>
-
-  <div className="flex justify-between">
-
-    <span>Son Güncelleme</span>
-
-    <span>{item.lastUpdated}</span>
-
-  </div>
-
-</div>
-
-<button
-  className="w-full mt-5 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-xl transition"
->
-  Menüyü İncele →
-</button>
-
       </div>
-
     </Link>
   );
 }

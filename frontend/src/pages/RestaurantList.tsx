@@ -2,69 +2,90 @@ import { useEffect, useState } from "react";
 
 import { getFoodRankCards } from "../services/foodrankService";
 import { getCategories } from "../services/categoryService";
+import { getSubCategories } from "../services/subCategoryService";
 
 import type { MenuCard as MenuCardType } from "../types/MenuCard";
+import type { Category } from "../types/category";
+import type { SubCategory } from "../types/subCategory";
 
-import MenuCard from "../components/Menu/MenuCard";
+import { useRestaurantFilter } from "../hooks/useRestaurantFilter";
+
+import Header from "../components/layout/Header";
 import SearchBar from "../components/home/SearchBar";
 import CategoryGrid from "../components/home/CategoryGrid";
+import SubCategoryBar from "../components/home/SubCategoryBar";
 import LocationPicker from "../components/home/LocationPicker";
 import FilterBar from "../components/home/FilterBar";
-import Header from "../components/layout/Header";
+import MenuCard from "../components/Menu/MenuCard";
 
 export default function RestaurantList() {
   const [menuCards, setMenuCards] = useState<MenuCardType[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("foodrank");
-  const [selectedCategory, setSelectedCategory] = useState("");
+
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedSubCategory, setSelectedSubCategory] = useState("");
 
   useEffect(() => {
     async function loadData() {
-      const [cards, cats] = await Promise.all([
-        getFoodRankCards(),
-        getCategories(),
-      ]);
+      try {
+        const [cards, cats] = await Promise.all([
+          getFoodRankCards(),
+          getCategories(),
+        ]);
 
-      setMenuCards(cards);
-      setCategories(cats);
-
-      setLoading(false);
+        setMenuCards(cards);
+        setCategories(cats);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
     }
 
     loadData();
   }, []);
 
-  const filteredItems = [...menuCards]
-    .filter((item) => {
-      const text = search.toLowerCase();
+useEffect(() => {
+  async function loadSubCategories() {
+    console.log("Selected:", selectedCategory);
 
-      const matchesSearch =
-        item.restaurantName.toLowerCase().includes(text) ||
-        item.itemName.toLowerCase().includes(text) ||
-        item.category.toLowerCase().includes(text) ||
-        item.district.toLowerCase().includes(text);
+    if (selectedCategory === "all") {
+      setSubCategories([]);
+      setSelectedSubCategory("");
+      return;
+    }
 
-      const matchesCategory =
-        selectedCategory === "" ||
-        item.category === selectedCategory;
+    const category = categories.find(
+      (c) => c.name === selectedCategory
+    );
 
-      return matchesSearch && matchesCategory;
-    })
-    .sort((a, b) => {
-      switch (sortBy) {
-        case "google":
-          return b.googleRating - a.googleRating;
+    console.log("Category:", category);
 
-        case "price":
-          return a.price - b.price;
+    if (!category) return;
 
-        default:
-          return b.foodRankScore - a.foodRankScore;
-      }
-    });
+    const data = await getSubCategories(category.id);
+
+    console.log("SubCategories:", data);
+
+    setSubCategories(data);
+    setSelectedSubCategory("");
+  }
+
+  loadSubCategories();
+}, [selectedCategory, categories]);
+
+  const filteredItems = useRestaurantFilter({
+    menuCards,
+    search,
+    selectedCategory,
+    selectedSubCategory,
+    sortBy,
+  });
 
   if (loading) {
     return (
@@ -75,68 +96,62 @@ export default function RestaurantList() {
   }
 
   return (
-  <>
-    <Header />
+    <>
+      <Header />
 
-    <main className="min-h-screen bg-gray-50">
+      <main className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-6 py-8">
 
-      <div className="max-w-6xl mx-auto px-6 py-8">
-
-        <Header />
-
-        <SearchBar
-          search={search}
-          setSearch={setSearch}
-        />
-
-        <CategoryGrid
-          categories={categories}
-          selectedCategory={selectedCategory}
-          setSelectedCategory={setSelectedCategory}
-        />
-
-        <div className="flex flex-wrap items-center justify-between gap-4 my-6">
-
-          <LocationPicker />
-
-          <FilterBar
-            sortBy={sortBy}
-            setSortBy={setSortBy}
+          <SearchBar
+            search={search}
+            setSearch={setSearch}
           />
 
+          <CategoryGrid
+            categories={categories}
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
+          />
+
+          <SubCategoryBar
+            subCategories={subCategories}
+            selectedSubCategory={selectedSubCategory}
+            setSelectedSubCategory={setSelectedSubCategory}
+          />
+
+          <div className="flex flex-wrap items-center justify-between gap-4 my-6">
+            <LocationPicker />
+
+            <FilterBar
+              sortBy={sortBy}
+              setSortBy={setSortBy}
+            />
+          </div>
+
+          {filteredItems.length > 0 ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredItems.map((item, index) => (
+                <MenuCard
+                  key={item.id}
+                  item={item}
+                  rank={index + 1}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="py-20 text-center">
+              <h2 className="text-2xl font-bold">
+                😕 Sonuç bulunamadı
+              </h2>
+
+              <p className="mt-2 text-gray-500">
+                Arama kriterini değiştirerek tekrar deneyin.
+              </p>
+            </div>
+          )}
+
         </div>
-
-        {filteredItems.length > 0 ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-            {filteredItems.map((item, index) => (
-
-              <MenuCard
-                key={item.id}
-                item={item}
-                rank={index + 1}
-              />
-
-            ))}
-
-
-          </div>
-        ) : (
-          <div className="text-center py-20">
-
-            <h2 className="text-2xl font-bold">
-              😕 Sonuç bulunamadı
-            </h2>
-
-            <p className="text-gray-500 mt-2">
-              Arama kriterini değiştirerek tekrar deneyin.
-            </p>
-
-          </div>
-        )}
-
-      </div>
-    </main>
+      </main>
     </>
   );
 }
