@@ -1,6 +1,11 @@
+import { useNavigate } from "react-router-dom";
+import type { MenuCard } from "../../types/MenuCard";
+
 type Props = {
   search: string;
   setSearch: React.Dispatch<React.SetStateAction<string>>;
+  suggestions: MenuCard[];
+  city: string;
 };
 
 const popularSearches = [
@@ -13,7 +18,57 @@ const popularSearches = [
 export default function SearchBar({
   search,
   setSearch,
+  suggestions,
+  city,
 }: Props) {
+
+  const navigate = useNavigate();
+
+  const text = search.trim().toLocaleLowerCase("tr");
+
+  const citySuggestions =
+    city === ""
+      ? suggestions
+      : suggestions.filter((x) => x.city === city);
+
+  // Ürün önerileri
+  const productSuggestions =
+    text.length < 3
+      ? []
+      : Array.from(
+          new Map(
+            citySuggestions
+              .filter((x) =>
+                x.itemName
+                  .toLocaleLowerCase("tr")
+                  .includes(text)
+              )
+              .map((x) => [x.subCategorySlug, x])
+          ).values()
+        ).slice(0, 5);
+
+  // Restoran önerileri
+  const restaurantSuggestions =
+    text.length < 3
+      ? []
+      : Array.from(
+          new Map(
+            citySuggestions
+              .filter(
+                (x) =>
+                  x.restaurantName
+                    .toLocaleLowerCase("tr")
+                    .includes(text)
+
+)
+              .sort(
+                (a, b) =>
+                  b.googleRating - a.googleRating
+              )
+              .map((x) => [x.restaurantSlug, x])
+          ).values()
+        ).slice(0, 5);
+
   return (
     <section className="mb-8">
 
@@ -25,7 +80,7 @@ export default function SearchBar({
 
         <div className="relative">
 
-          <span className="absolute left-5 top-1/2 -translate-y-1/2 text-xl">
+          <span className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl">
             🔍
           </span>
 
@@ -33,24 +88,143 @@ export default function SearchBar({
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="İskender, Pizza, Döner veya restoran ara..."
-            className="w-full rounded-2xl border border-gray-200 py-4 pl-14 pr-12 text-lg outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-200"
+            placeholder="İskender, Kebap, Pizza veya restoran ara..."
+            className="
+              h-14
+              w-full
+              rounded-2xl
+              border
+              border-gray-200
+              bg-white
+              pl-14
+              pr-12
+              text-base
+              placeholder:text-gray-400
+              shadow-sm
+              transition-all
+              duration-200
+              outline-none
+              hover:border-orange-300
+              hover:shadow-md
+              focus:border-orange-400
+              focus:ring-4
+              focus:ring-orange-100
+              focus:shadow-lg
+            "
           />
 
           {search && (
             <button
               onClick={() => setSearch("")}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-xl text-gray-400 hover:text-gray-700"
+              className="
+                absolute
+                right-5
+                top-1/2
+                -translate-y-1/2
+                text-xl
+                text-gray-400
+                hover:text-orange-500
+              "
             >
-              ×
+              ✕
             </button>
+          )}
+
+          {(productSuggestions.length > 0 ||
+            restaurantSuggestions.length > 0) && (
+
+            <div
+              className="
+                absolute
+                left-0
+                right-0
+                top-16
+                z-50
+                overflow-hidden
+                rounded-2xl
+                border
+                border-gray-200
+                bg-white
+                shadow-2xl
+                max-h-96
+                overflow-y-auto
+              "
+            >
+
+              {/* ÜRÜNLER */}
+
+              {productSuggestions.length > 0 && (
+                <>
+                  <div className="bg-orange-50 px-5 py-2 text-xs font-bold uppercase text-orange-600">
+                    🍽️ Yemekler
+                  </div>
+
+                  {productSuggestions.map((item) => (
+                    <button
+                      key={item.subCategorySlug}
+                      onClick={() => {
+                        setSearch("");
+                        navigate(`/subcategory/${item.subCategorySlug}`);
+                      }}
+                      className="flex w-full items-center justify-between px-5 py-4 text-left transition hover:bg-orange-50"
+                    >
+                      <div>
+                        <p className="font-semibold text-gray-900">
+                          🥙 {item.itemName}
+                        </p>
+
+                        <p className="mt-1 text-sm text-gray-500">
+                          {item.category}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </>
+              )}
+
+              {/* RESTORANLAR */}
+
+              {restaurantSuggestions.length > 0 && (
+                <>
+                  <div className="bg-gray-100 px-5 py-2 text-xs font-bold uppercase text-gray-600">
+                    🏪 Restoranlar
+                  </div>
+
+                  {restaurantSuggestions.map((item) => (
+                    <button
+                      key={item.restaurantSlug}
+                      onClick={() => {
+                        setSearch("");
+                        navigate(`/restaurant/${item.restaurantSlug}`);
+                      }}
+                      className="flex w-full items-center justify-between px-5 py-4 text-left transition hover:bg-orange-50"
+                    >
+                      <div>
+                        <p className="font-semibold text-gray-900">
+                          🍽️ {item.restaurantName}
+                        </p>
+
+                        <p className="mt-1 text-sm text-gray-500">
+                          {item.itemName} • {item.district}
+                        </p>
+                      </div>
+
+                      <span className="font-bold text-orange-500">
+                        ₺{item.price}
+                      </span>
+                    </button>
+                  ))}
+                </>
+              )}
+
+            </div>
           )}
 
         </div>
 
-        <div className="mt-5 flex flex-wrap gap-2">
+        <div className="mt-3 flex flex-wrap gap-2">
 
-          <span className="text-sm font-semibold text-gray-500">
+          <span className="text-base font-semibold text-gray-700">
             🔥 Popüler:
           </span>
 
@@ -58,7 +232,7 @@ export default function SearchBar({
             <button
               key={item}
               onClick={() => setSearch(item)}
-              className="rounded-full bg-orange-50 px-4 py-2 text-sm font-medium text-orange-600 transition hover:bg-orange-100"
+              className="rounded-full bg-orange-50 px-5 py-2.5 text-sm font-semibold text-orange-600 transition hover:bg-orange-500 hover:text-white hover:shadow-md"
             >
               {item}
             </button>

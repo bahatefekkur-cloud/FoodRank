@@ -1,11 +1,63 @@
 import { supabase } from "../lib/supabase";
 import type { MenuCard } from "../types/MenuCard";
+import { getFoodRankRules } from "./foodRankRuleService";
+import { calculateFoodRankScore } from "../utils/foodRank";
+
+export function mapMenuCard(item: any): MenuCard {
+  return {
+    id: item.id,
+
+    restaurantName: item.restaurant_name,
+
+    restaurantSlug:
+      item.slug ??
+      item.restaurant_name
+        .toLowerCase()
+        .replaceAll(" ", "-")
+        .replaceAll("ı", "i")
+        .replaceAll("ş", "s")
+        .replaceAll("ğ", "g")
+        .replaceAll("ü", "u")
+        .replaceAll("ö", "o")
+        .replaceAll("ç", "c"),
+
+    itemName: item.item_name,
+
+    category: item.category,
+    categorySlug: item.category_slug ?? "",
+
+    subCategoryId: item.sub_category_id ?? 0,
+    subCategorySlug: item.sub_category_slug ?? "",
+
+    image: item.image_url,
+
+    city: item.city,
+    district: item.district,
+
+    price: item.price,
+
+    googleRating: item.google_rating,
+    googleReviews: item.review_count,
+
+    mapsUrl: item.maps_url,
+
+    latitude: item.latitude,
+    longitude: item.longitude,
+
+    address: item.address ?? "",
+    placeId: item.place_id ?? "",
+
+    foodRankScore: item.food_rank_score ?? 0,
+
+    lastUpdated: "",
+  };
+}
 
 export async function getFoodRankCards(): Promise<MenuCard[]> {
-
   const { data, error } = await supabase
     .from("menu_cards")
     .select("*")
+
     .order("google_rating", { ascending: false });
 
   if (error) {
@@ -13,45 +65,106 @@ export async function getFoodRankCards(): Promise<MenuCard[]> {
     return [];
   }
 
-  console.log("ilk kayıt", data?.[0]);
+  return (data ?? []).map(mapMenuCard);
+}
 
-  return (data ?? []).map((item) => ({
+export async function getFoodRankCardsByCategory(
+  category: string,
+  city?: string,
+  district?: string
+): Promise<MenuCard[]> {
 
-    id: item.id,
+  let query = supabase
+    .from("menu_cards")
+    .select("*")
+    .eq("category", category);
 
-    restaurantName: item.restaurant_name,
+  if (city) {
+    query = query.eq("city", city);
+  }
 
-    restaurantSlug: item.restaurant_name
-      .toLowerCase()
-      .replaceAll(" ", "-")
-      .replaceAll("ı", "i")
-      .replaceAll("ş", "s")
-      .replaceAll("ğ", "g")
-      .replaceAll("ü", "u")
-      .replaceAll("ö", "o")
-      .replaceAll("ç", "c"),
+  if (district) {
+    query = query.eq("district", district);
+  }
 
-    image: "https://picsum.photos/600/400",
+  const { data, error } = await query.order("google_rating", {
+    ascending: false,
+  });
 
-    district: item.district,
-    city: item.city,
+  if (error) {
+    console.error(error);
+    return [];
+  }
 
-    googleRating: item.google_rating,
-    googleReviews: item.review_count,
+  return (data ?? []).map(mapMenuCard);
+}
 
-    category: item.category,
+export async function getSimilarRestaurants(
+  category: string,
+  city: string,
+  currentRestaurant: string
+): Promise<MenuCard[]> {
 
-    itemName: item.item_name,
+  const { data, error } = await supabase
+    .from("menu_cards")
+    .select("*")
+    .eq("category", category)
+    .eq("city", city)
+    .neq("restaurant_name", currentRestaurant);
 
-    price: item.price,
+  if (error) {
+    console.error(error);
+    return [];
+  }
 
-    gram: item.gramaj ?? 0,
 
-    // Geçici
-    foodRankScore: 0,
+  const cards = (data ?? []).map(mapMenuCard);
 
-    // Geçici
-    lastUpdated: "",
+  const rules = await getFoodRankRules();
 
-  }));
+  const cheapestPrice = Math.min(
+    ...cards.map((x) => x.price)
+  );
+
+  return cards
+    .map((card) => ({
+      ...card,
+      score: calculateFoodRankScore(
+        card,
+        cheapestPrice,
+        rules
+      ),
+    }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3);
+}
+
+export async function getFoodRankCardsBySubCategory(
+  slug: string,
+  city?: string,
+  district?: string
+) {
+  let query = supabase
+    .from("menu_cards")
+    .select("*")
+    .eq("sub_category_slug", slug);
+
+  if (city) {
+    query = query.eq("city", city);
+  }
+
+  if (district) {
+    query = query.eq("district", district);
+  }
+
+  const { data, error } = await query.order("google_rating", {
+    ascending: false,
+  });
+
+  if (error) {
+    console.error(error);
+    return [];
+  }
+
+  return (data ?? []).map(mapMenuCard);
 }

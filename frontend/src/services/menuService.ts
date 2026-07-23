@@ -32,10 +32,6 @@ export async function getMenuCards() {
 
     price: item.price,
 
-    gram: item.gramaj,
-
-    foodRankScore: 0,
-
     lastUpdated: "",
   }));
 }

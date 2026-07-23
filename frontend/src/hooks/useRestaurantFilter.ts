@@ -51,7 +51,7 @@ export function useRestaurantFilter({
           return a.price - b.price;
 
         default:
-          return b.foodRankScore - a.foodRankScore;
+          return (b.foodRankScore ?? 0) - (a.foodRankScore ?? 0) ;
       }
     });
 }

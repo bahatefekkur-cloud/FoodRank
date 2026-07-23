@@ -41,85 +41,81 @@ export default function MenuCard({ item, rank }: Props) {
 
   return (
     <Link
-      to={`/restaurant/${item.restaurantSlug}`}
+      to={`/restaurant/${item.restaurantSlug}?subcategory=${item.subCategorySlug}`}
       className="group overflow-hidden rounded-3xl bg-white shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
     >
       {/* Fotoğraf */}
-      <div className="relative overflow-hidden">
-        <img
-          src={item.image}
-          alt={item.restaurantName}
-          className="h-56 w-full object-cover transition duration-500 group-hover:scale-105"
-        />
+<div className="relative overflow-hidden">
+  <img
+    src={item.image}
+    alt={item.restaurantName}
+    className="h-48 w-full object-cover transition duration-500 group-hover:scale-105"
+  />
 
-        <div className="absolute left-4 top-4">
-          {rankBadge()}
-        </div>
+  <div className="absolute left-4 top-4">
+    {rankBadge()}
+  </div>
+</div>
 
-        <div className="absolute right-4 top-4 rounded-full bg-white/95 px-3 py-1 text-sm font-semibold shadow">
-          ⭐ {item.googleRating}
-        </div>
-      </div>
 
-      <div className="p-5">
+      <div className="p-4">
+        <div className="mb-4 flex items-center gap-2 text-sm text-gray-500">
+  <span className="text-yellow-500">⭐</span>
+
+  <span className="font-semibold text-gray-800">
+    {item.googleRating.toFixed(1)}
+  </span>
+
+  <span>•</span>
+
+  <span>
+    {item.googleReviews.toLocaleString("tr-TR")} yorum
+  </span>
+</div>
+
 
         {/* Restoran */}
-        <h3 className="line-clamp-1 text-xl font-bold">
+        <h3 className="line-clamp-1 text-2xl font-bold text-gray-900">
           {item.restaurantName}
         </h3>
 
-        <p className="mt-1 text-sm text-gray-500">
-          💬 {item.googleReviews.toLocaleString()} yorum
-        </p>
-
         {/* Ürün */}
         <div className="mt-5">
-          <p className="text-sm uppercase tracking-wide text-orange-500 font-semibold">
-            Menü
-          </p>
 
-          <h2 className="mt-1 text-2xl font-bold">
+          <h4 className="mt-1 text-lg font-medium text-gray-700">
             {item.itemName}
-          </h2>
+          </h4>
 
-          <p className="mt-1 text-gray-500">
-            {item.gram} gr
-          </p>
         </div>
 
         {/* Fiyat */}
-        <div className="mt-6 flex items-end justify-between">
-          <div>
-            <p className="text-sm text-gray-500">
-              Güncel Fiyat
-            </p>
+<div className="mt-6">
+  <p className="text-3xl font-extrabold text-orange-600">
+    {item.price} ₺
+  </p>
+</div>
 
-            <p className="text-4xl font-extrabold text-orange-600">
-              {item.price} ₺
-            </p>
-          </div>
-
-          <div className="rounded-2xl bg-orange-50 px-4 py-2 text-center">
-            <p className="text-xs text-gray-500">
-              FoodRank
-            </p>
-
-            <p className="text-xl font-bold text-orange-600">
-              {item.foodRankScore}
-            </p>
-          </div>
-        </div>
 
         {/* Alt Bilgi */}
-        <div className="mt-6 flex items-center justify-between border-t pt-4 text-sm text-gray-500">
+        <div className="mt-4 flex items-center justify-between border-t pt-3 text-sm">
 
-          <span>
-            📍 {item.district}, {item.city}
-          </span>
+  <span className="text-gray-500">
+    📍 {item.district}, {item.city}
+  </span>
 
-          <span>{item.lastUpdated}</span>
+<button
+  type="button"
+  onClick={(e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    window.open(item.mapsUrl, "_blank");
+  }}
+  className="font-medium text-gray-500 transition hover:text-orange-600"
+>
+  Haritada Aç ↗
+</button>
+</div>
 
-        </div>
 
       </div>
     </Link>

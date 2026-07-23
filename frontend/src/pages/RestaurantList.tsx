@@ -1,43 +1,46 @@
 import { useEffect, useState } from "react";
-
 import { getFoodRankCards } from "../services/foodrankService";
 import { getCategories } from "../services/categoryService";
-import { getSubCategories } from "../services/subCategoryService";
-
 import type { MenuCard as MenuCardType } from "../types/MenuCard";
 import type { Category } from "../types/category";
-import type { SubCategory } from "../types/subCategory";
-
 import { useRestaurantFilter } from "../hooks/useRestaurantFilter";
-
 import Header from "../components/layout/Header";
 import SearchBar from "../components/home/SearchBar";
 import CategoryGrid from "../components/home/CategoryGrid";
-import SubCategoryBar from "../components/home/SubCategoryBar";
-import LocationPicker from "../components/home/LocationPicker";
-import FilterBar from "../components/home/FilterBar";
-import MenuCard from "../components/Menu/MenuCard";
+import TopRestaurants from "../components/home/TopRestaurants";
+import CampaignSection from "../components/home/CampaignSection";
+import CityGrid from "../components/home/CityGrid";
+import { useFoodRank } from "../hooks/useFoodRank";
+import {
+  getFoodRankRules,
+  type FoodRankRule,
+} from "../services/foodRankRuleService";
+import Footer from "../components/layout/Footer";
+import BottomNavigation from "../components/home/BottomNavigation";
+import RestaurantGrid from "../components/restaurant/RestaurantGrid";
 
 export default function RestaurantList() {
   const [menuCards, setMenuCards] = useState<MenuCardType[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("foodrank");
+  const [selectedCity, setSelectedCity] = useState("Bursa");
+  const [foodRankRules, setFoodRankRules] =
+  useState<FoodRankRule[]>([]);
 
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedSubCategory, setSelectedSubCategory] = useState("");
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [cards, cats] = await Promise.all([
+        const [cards, cats, rules] = await Promise.all([
           getFoodRankCards(),
           getCategories(),
+          getFoodRankRules(),
         ]);
 
+        setFoodRankRules(rules);
         setMenuCards(cards);
         setCategories(cats);
       } catch (error) {
@@ -50,42 +53,21 @@ export default function RestaurantList() {
     loadData();
   }, []);
 
-useEffect(() => {
-  async function loadSubCategories() {
-    console.log("Selected:", selectedCategory);
-
-    if (selectedCategory === "all") {
-      setSubCategories([]);
-      setSelectedSubCategory("");
-      return;
-    }
-
-    const category = categories.find(
-      (c) => c.name === selectedCategory
-    );
-
-    console.log("Category:", category);
-
-    if (!category) return;
-
-    const data = await getSubCategories(category.id);
-
-    console.log("SubCategories:", data);
-
-    setSubCategories(data);
-    setSelectedSubCategory("");
-  }
-
-  loadSubCategories();
-}, [selectedCategory, categories]);
-
   const filteredItems = useRestaurantFilter({
     menuCards,
     search,
-    selectedCategory,
-    selectedSubCategory,
+    selectedCategory: "all",
+    selectedSubCategory: "",
     sortBy,
   });
+
+  const rankedItems = useFoodRank({
+  cards: filteredItems,
+  selectedSubCategory: "",
+  sortBy,
+  rules: foodRankRules,
+});
+
 
   if (loading) {
     return (
@@ -105,50 +87,30 @@ useEffect(() => {
           <SearchBar
             search={search}
             setSearch={setSearch}
+            suggestions={menuCards.filter(
+              (x) => selectedCity === "" || x.city === selectedCity
+            )}
+            city={selectedCity}
           />
 
-          <CategoryGrid
-            categories={categories}
-            selectedCategory={selectedCategory}
-            setSelectedCategory={setSelectedCategory}
+          <CategoryGrid categories={categories} />
+
+          <CityGrid
+          selectedCity={selectedCity}
+          setSelectedCity={setSelectedCity}
           />
 
-          <SubCategoryBar
-            subCategories={subCategories}
-            selectedSubCategory={selectedSubCategory}
-            setSelectedSubCategory={setSelectedSubCategory}
-          />
+          <TopRestaurants items={rankedItems} />
 
-          <div className="flex flex-wrap items-center justify-between gap-4 my-6">
-            <LocationPicker />
+          <CampaignSection />
 
-            <FilterBar
-              sortBy={sortBy}
-              setSortBy={setSortBy}
-            />
-          </div>
+          <RestaurantGrid items={rankedItems} />
 
-          {filteredItems.length > 0 ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredItems.map((item, index) => (
-                <MenuCard
-                  key={item.id}
-                  item={item}
-                  rank={index + 1}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="py-20 text-center">
-              <h2 className="text-2xl font-bold">
-                😕 Sonuç bulunamadı
-              </h2>
+          <Footer />
 
-              <p className="mt-2 text-gray-500">
-                Arama kriterini değiştirerek tekrar deneyin.
-              </p>
-            </div>
-          )}
+          <BottomNavigation />
+
+          
 
         </div>
       </main>

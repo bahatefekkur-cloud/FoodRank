@@ -14,3 +14,15 @@ export async function getSubCategories(categoryId: number) {
 
   return data;
 }
+
+export async function getSubCategoryBySlug(slug: string) {
+  const { data, error } = await supabase
+    .from("sub_categories")
+    .select("*")
+    .eq("slug", slug)
+    .single();
+
+  if (error) return null;
+
+  return data;
+}

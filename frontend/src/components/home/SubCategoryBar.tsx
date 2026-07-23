@@ -11,23 +11,31 @@ export default function SubCategoryBar({
   selectedSubCategory,
   setSelectedSubCategory,
 }: Props) {
-  if (subCategories.length === 0) return null;
-
   return (
-    <div className="mb-8 flex flex-wrap gap-3">
+    <div className="flex gap-3 overflow-x-auto pb-3 mb-6 scrollbar-hide">
+
+      <button
+        onClick={() => setSelectedSubCategory("")}
+        className={`whitespace-nowrap rounded-full px-4 py-2 font-medium transition
+          ${
+            selectedSubCategory === ""
+              ? "bg-orange-500 text-white shadow-md"
+              : "bg-white border shadow-sm hover:bg-orange-50 hover:shadow-md"
+          }`}
+      >
+        Tümü
+      </button>
+
       {subCategories.map((item) => (
         <button
           key={item.id}
-          onClick={() =>
-            setSelectedSubCategory(
-              selectedSubCategory === item.name ? "" : item.name
-            )
-          }
-          className={`rounded-full px-5 py-2 transition ${
-            selectedSubCategory === item.name
-              ? "bg-orange-500 text-white"
-              : "bg-white border hover:bg-orange-50"
-          }`}
+          onClick={() => setSelectedSubCategory(item.name)}
+          className={`whitespace-nowrap rounded-full px-4 py-2 font-medium transition
+            ${
+              selectedSubCategory === item.name
+                ? "bg-orange-500 text-white shadow-md"
+                : "bg-white border shadow-sm hover:bg-orange-50 hover:shadow-md"
+            }`}
         >
           {item.name}
         </button>

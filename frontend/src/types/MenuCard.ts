@@ -2,28 +2,36 @@ export interface MenuCard {
   id: number;
 
   restaurantName: string;
-
   restaurantSlug: string;
-
-  image: string;
-
-  district: string;
-
-  city: string;
-
-  googleRating: number;
-
-  googleReviews: number;
-
-  category: string;
 
   itemName: string;
 
+  category: string;
+  categorySlug: string;
+
+  subCategoryId: number;
+  subCategorySlug: string;
+
+  city: string;
+  district: string;
+
+  image: string;
+
   price: number;
 
-  gram?: number;
+  googleRating: number;
+  googleReviews: number;
 
-  foodRankScore: number;
+  mapsUrl: string;
+
+  latitude: number | null;
+  longitude: number | null;
+  placeId?: string | null;
+  address?: string | null;
+
+
+  foodRankScore?: number;
 
   lastUpdated: string;
 }
+
