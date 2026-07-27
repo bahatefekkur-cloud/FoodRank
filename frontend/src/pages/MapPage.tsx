@@ -5,7 +5,6 @@ import L from "leaflet";
 import { getFoodRankCards } from "../services/foodrankService";
 import type { MenuCard } from "../types/MenuCard";
 
-import MarkerClusterGroup from "react-leaflet-cluster";
 import { Link } from "react-router-dom";
 
 
@@ -59,10 +58,6 @@ export default function MapPage() {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
-     <MarkerClusterGroup
-  chunkedLoading
-  maxClusterRadius={60}
->
   {restaurants
     .filter(
       (r) =>
@@ -130,7 +125,6 @@ export default function MapPage() {
         </Popup>
       </Marker>
     ))}
-</MarkerClusterGroup>
 
     </MapContainer>
   );

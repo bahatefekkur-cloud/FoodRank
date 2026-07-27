@@ -9,7 +9,8 @@ import CategoryPage from "../pages/CategoryPage";
 import RestaurantPage from "../pages/RestaurantPage";
 import SubCategoryPage from "../pages/SubCategoryPage";
 import TopRestaurantsPage from "../pages/TopRestaurantsPage";
-import MapPage from "../pages/MapPage";
+import ResultsPage from "../pages/ResultsPage";
+import CityPage from "../pages/CityPage";
 
 export default function AppRouter() {
   return (
@@ -22,8 +23,8 @@ export default function AppRouter() {
         />
 
         <Route
-          path="/map"
-          element={<MapPage />}
+          path="/results"
+          element={<ResultsPage />}
         />
 
 
@@ -41,6 +42,10 @@ export default function AppRouter() {
           path="/subcategory/:slug"
           element={<SubCategoryPage />}
         />
+
+        <Route 
+          path="/city/:slug" 
+          element={<CityPage />} />
 
         <Route
           path="/top-restaurants"

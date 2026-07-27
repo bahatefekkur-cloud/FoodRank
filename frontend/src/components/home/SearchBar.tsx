@@ -1,9 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import type { MenuCard } from "../../types/MenuCard";
+import { useFilter } from "../../context/FilterContext";
 
 type Props = {
-  search: string;
-  setSearch: React.Dispatch<React.SetStateAction<string>>;
   suggestions: MenuCard[];
   city: string;
 };
@@ -16,11 +15,11 @@ const popularSearches = [
 ];
 
 export default function SearchBar({
-  search,
-  setSearch,
   suggestions,
   city,
 }: Props) {
+
+  const { search, setSearch } = useFilter();
 
   const navigate = useNavigate();
 
@@ -89,6 +88,22 @@ export default function SearchBar({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="İskender, Kebap, Pizza veya restoran ara..."
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+
+  const item = citySuggestions.find(
+    (x) =>
+      x.itemName.toLocaleLowerCase("tr") ===
+      search.trim().toLocaleLowerCase("tr")
+  );
+
+  if (item) {
+    setSearch("");
+    navigate(`/subcategory/${item.subCategorySlug}`);
+  }
+
+}
+            }}
             className="
               h-14
               w-full
@@ -231,7 +246,20 @@ export default function SearchBar({
           {popularSearches.map((item) => (
             <button
               key={item}
-              onClick={() => setSearch(item)}
+              onClick={() => {
+
+  const found = citySuggestions.find(
+    (x) =>
+      x.itemName.toLocaleLowerCase("tr") ===
+      item.toLocaleLowerCase("tr")
+  );
+
+  if (found) {
+    setSearch("");
+    navigate(`/subcategory/${found.subCategorySlug}`);
+  }
+
+}}
               className="rounded-full bg-orange-50 px-5 py-2.5 text-sm font-semibold text-orange-600 transition hover:bg-orange-500 hover:text-white hover:shadow-md"
             >
               {item}

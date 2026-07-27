@@ -1,21 +1,24 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, type Dispatch, type SetStateAction, } from "react";
 
 type FilterContextType = {
 
   city: string;
-  setCity: (v: string) => void;
+  setCity: Dispatch<SetStateAction<string>>;
 
   district: string;
-  setDistrict: (v: string) => void;
+  setDistrict: Dispatch<SetStateAction<string>>;
 
   category: string;
-  setCategory: (v: string) => void;
+  setCategory: Dispatch<SetStateAction<string>>;
 
   subCategory: string;
-  setSubCategory: (v: string) => void;
+  setSubCategory: Dispatch<SetStateAction<string>>;
 
   search: string;
-  setSearch: (v: string) => void;
+  setSearch: Dispatch<SetStateAction<string>>;
+
+  sortBy: string;
+  setSortBy: Dispatch<SetStateAction<string>>;
 
 };
 
@@ -36,6 +39,8 @@ export function FilterProvider({
 
   const [search, setSearch] = useState("");
 
+  const [sortBy, setSortBy] =useState("foodrank");
+
   return (
 
     <FilterContext.Provider
@@ -54,6 +59,9 @@ export function FilterProvider({
 
         search,
         setSearch,
+
+        sortBy,
+        setSortBy,
       }}
     >
 

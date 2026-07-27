@@ -1,20 +1,14 @@
 import type { MenuCard } from "../types/MenuCard";
+import { useFilter } from "../context/FilterContext";
 
-interface Props {
-  menuCards: MenuCard[];
-  search: string;
-  selectedCategory: string;
-  selectedSubCategory: string;
-  sortBy: string;
-}
-
-export function useRestaurantFilter({
-  menuCards,
+export function useRestaurantFilter(menuCards: MenuCard[]) {
+  const {
+  city,
+  category,
+  subCategory,
   search,
-  selectedCategory,
-  selectedSubCategory,
   sortBy,
-}: Props) {
+} = useFilter();
   return [...menuCards]
     .filter((item) => {
       const text = search.trim().toLowerCase();
@@ -26,20 +20,26 @@ export function useRestaurantFilter({
         item.district.toLowerCase().includes(text);
 
       const matchesCategory =
-        selectedCategory === "all" ||
+        category === "" ||
+        category === "all" ||
         item.category.trim().toLowerCase() ===
-          selectedCategory.trim().toLowerCase();
+          category.trim().toLowerCase();
 
       const matchesSubCategory =
-        selectedSubCategory === "" ||
+        subCategory === "" ||
         item.itemName
           .toLowerCase()
-          .includes(selectedSubCategory.toLowerCase());
+          .includes(subCategory.toLowerCase());
+
+      const matechesCity =
+        city === "" ||
+        item.city === city;
 
       return (
         matchesSearch &&
         matchesCategory &&
-        matchesSubCategory
+        matchesSubCategory &&
+        matechesCity
 );
     })
     .sort((a, b) => {

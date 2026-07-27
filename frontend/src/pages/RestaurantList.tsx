@@ -17,16 +17,18 @@ import {
 } from "../services/foodRankRuleService";
 import Footer from "../components/layout/Footer";
 import BottomNavigation from "../components/home/BottomNavigation";
-import RestaurantGrid from "../components/restaurant/RestaurantGrid";
+import { useFilter } from "../context/FilterContext";
 
 export default function RestaurantList() {
   const [menuCards, setMenuCards] = useState<MenuCardType[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const {
+    city,
+    setCity,
+    sortBy,
+  } = useFilter();
 
-  const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState("foodrank");
-  const [selectedCity, setSelectedCity] = useState("Bursa");
   const [foodRankRules, setFoodRankRules] =
   useState<FoodRankRule[]>([]);
 
@@ -53,13 +55,7 @@ export default function RestaurantList() {
     loadData();
   }, []);
 
-  const filteredItems = useRestaurantFilter({
-    menuCards,
-    search,
-    selectedCategory: "all",
-    selectedSubCategory: "",
-    sortBy,
-  });
+  const filteredItems = useRestaurantFilter(menuCards);
 
   const rankedItems = useFoodRank({
   cards: filteredItems,
@@ -85,26 +81,22 @@ export default function RestaurantList() {
         <div className="max-w-7xl mx-auto px-6 py-8">
 
           <SearchBar
-            search={search}
-            setSearch={setSearch}
             suggestions={menuCards.filter(
-              (x) => selectedCity === "" || x.city === selectedCity
+              (x) => city === "" || x.city === city
             )}
-            city={selectedCity}
+            city={city}
           />
 
           <CategoryGrid categories={categories} />
 
           <CityGrid
-          selectedCity={selectedCity}
-          setSelectedCity={setSelectedCity}
+          selectedCity={city}
+          setSelectedCity={setCity}
           />
 
           <TopRestaurants items={rankedItems} />
 
           <CampaignSection />
-
-          <RestaurantGrid items={rankedItems} />
 
           <Footer />
 
