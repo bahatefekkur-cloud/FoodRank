@@ -1,18 +1,19 @@
 import os
 
 from dotenv import load_dotenv
-
 from supabase import create_client
 
-# .env dosyasını oku
 load_dotenv()
 
-# Supabase bilgileri
 SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
+SUPABASE_SECRET_KEY = os.getenv("SUPABASE_SECRET_KEY")
 
-# Supabase bağlantısı
+if not SUPABASE_URL or not SUPABASE_SECRET_KEY:
+    raise RuntimeError(
+        "SUPABASE_URL veya SUPABASE_SECRET_KEY eksik."
+    )
+
 supabase = create_client(
     SUPABASE_URL,
-    SUPABASE_SERVICE_KEY
+    SUPABASE_SECRET_KEY,
 )
