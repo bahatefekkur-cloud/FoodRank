@@ -1,93 +1,211 @@
+import {
+  useEffect,
+  useState,
+} from "react";
+import {
+  BadgePercent,
+} from "lucide-react";
+import { Link } from "react-router-dom";
+
+import CampaignCard from "../campaigns/CampaignCard";
+import {
+  getActiveCampaigns,
+  type CampaignCard as Campaign,
+} from "../../services/campaignService";
+import { useFilter } from "../../hooks/useFilter";
+
+function shuffleCampaigns(
+  campaigns: Campaign[]
+): Campaign[] {
+  const shuffled = [...campaigns];
+
+  for (
+    let index = shuffled.length - 1;
+    index > 0;
+    index -= 1
+  ) {
+    const swapIndex = Math.floor(
+      Math.random() * (index + 1)
+    );
+
+    [
+      shuffled[index],
+      shuffled[swapIndex],
+    ] = [
+      shuffled[swapIndex],
+      shuffled[index],
+    ];
+  }
+
+  return shuffled;
+}
+
 export default function CampaignSection() {
+  const { city } = useFilter();
+
+  const [campaigns, setCampaigns] =
+    useState<Campaign[]>([]);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      setLoading(true);
+
+      const data =
+        await getActiveCampaigns(
+          city
+        );
+
+      const uniqueByRestaurant =
+        new Map<number, Campaign>();
+
+      for (const campaign of data) {
+        if (
+          !uniqueByRestaurant.has(
+            campaign.restaurantId
+          )
+        ) {
+          uniqueByRestaurant.set(
+            campaign.restaurantId,
+            campaign
+          );
+        }
+      }
+
+      const showcaseCampaigns =
+        shuffleCampaigns(
+          Array.from(
+            uniqueByRestaurant.values()
+          )
+        ).slice(0, 3);
+
+      if (!cancelled) {
+        setCampaigns(
+          showcaseCampaigns
+        );
+        setLoading(false);
+      }
+    }
+
+    if (!city) {
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [city]);
+
+  if (!city) {
+    return null;
+  }
+
+  if (
+    !loading &&
+    campaigns.length === 0
+  ) {
+    return null;
+  }
+
   return (
-    <section className="mb-14">
+    <section className="mb-10 sm:mb-14">
+      <div className="mb-5 flex items-end justify-between gap-4 sm:mb-6">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <BadgePercent
+              size={22}
+              className="shrink-0 text-orange-500 sm:size-6"
+            />
 
-      <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
+              Güncel Kampanyalar
+            </h2>
+          </div>
 
-        <div>
-          <h2 className="text-3xl font-bold">
-            🎁 Güncel Kampanyalar
-          </h2>
+          <p className="mt-2 hidden text-sm text-gray-500 sm:block">
+            {city} restoranlarındaki
+            güncel fırsatları keşfet.
+          </p>
 
-          <p className="mt-1 text-gray-500">
-            Restoranların güncel fırsatlarını kaçırma.
+          <p className="mt-1 text-xs font-medium text-gray-400">
+            Sponsorlu içerikler yer
+            alabilir.
           </p>
         </div>
 
-        <button className="font-semibold text-orange-500 hover:underline">
+        <Link
+          to="/campaigns"
+          className="shrink-0 text-xs font-bold text-orange-600 transition hover:text-orange-700 sm:text-sm"
+        >
           Tümünü Gör →
-        </button>
-
+        </Link>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      {loading ? (
+        <>
+          {/* Mobil skeleton */}
+          <div className="-mx-4 flex gap-4 overflow-hidden px-4 sm:hidden">
+            {[1, 2].map(
+              (item) => (
+                <div
+                  key={item}
+                  className="h-[380px] w-[84vw] max-w-[340px] shrink-0 animate-pulse rounded-2xl bg-gray-100"
+                />
+              )
+            )}
+          </div>
 
-        <div className="rounded-3xl bg-gradient-to-br from-orange-500 to-red-500 p-8 text-white shadow-lg">
+          {/* Desktop skeleton */}
+          <div className="hidden gap-6 sm:grid sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map(
+              (item) => (
+                <div
+                  key={item}
+                  className="h-[390px] animate-pulse rounded-3xl bg-gray-100"
+                />
+              )
+            )}
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Mobil: yatay kampanya carousel */}
+          <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 scrollbar-hide sm:hidden">
+            {campaigns.map(
+              (campaign) => (
+                <div
+                  key={campaign.id}
+                  className="w-[84vw] max-w-[340px] shrink-0 snap-start"
+                >
+                  <CampaignCard
+                    campaign={campaign}
+                  />
+                </div>
+              )
+            )}
+          </div>
 
-          <span className="rounded-full bg-white/20 px-3 py-1 text-sm">
-            Burger
-          </span>
-
-          <h3 className="mt-6 text-2xl font-bold">
-            Whopper Menü
-          </h3>
-
-          <p className="mt-2 text-orange-100">
-            Seçili şubelerde geçerli.
-          </p>
-
-          <p className="mt-8 text-4xl font-extrabold">
-            %20
-          </p>
-
-          <p className="text-lg">
-            İndirim
-          </p>
-
-        </div>
-
-        <div className="rounded-3xl bg-gradient-to-br from-amber-400 to-orange-500 p-8 text-white shadow-lg">
-
-          <span className="rounded-full bg-white/20 px-3 py-1 text-sm">
-            Pizza
-          </span>
-
-          <h3 className="mt-6 text-2xl font-bold">
-            Büyük Boy Pizza
-          </h3>
-
-          <p className="mt-2 text-orange-100">
-            Bugüne özel kampanya.
-          </p>
-
-          <p className="mt-8 text-4xl font-extrabold">
-            199₺
-          </p>
-
-        </div>
-
-        <div className="rounded-3xl bg-gradient-to-br from-gray-800 to-gray-900 p-8 text-white shadow-lg">
-
-          <span className="rounded-full bg-white/20 px-3 py-1 text-sm">
-            Tavuk
-          </span>
-
-          <h3 className="mt-6 text-2xl font-bold">
-            2 Al 1 Öde
-          </h3>
-
-          <p className="mt-2 text-gray-300">
-            Sınırlı süre.
-          </p>
-
-          <p className="mt-8 text-4xl font-extrabold">
-            BUGÜN
-          </p>
-
-        </div>
-
-      </div>
-
+          {/* Tablet / desktop */}
+          <div className="hidden gap-6 sm:grid sm:grid-cols-2 lg:grid-cols-3">
+            {campaigns.map(
+              (campaign) => (
+                <CampaignCard
+                  key={campaign.id}
+                  campaign={campaign}
+                />
+              )
+            )}
+          </div>
+        </>
+      )}
     </section>
   );
 }
